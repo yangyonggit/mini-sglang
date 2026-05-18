@@ -10,6 +10,21 @@ A **lightweight yet high-performance** inference framework for Large Language Mo
 
 Mini-SGLang is a compact implementation of [SGLang](https://github.com/sgl-project/sglang), designed to demystify the complexities of modern LLM serving systems. With a compact codebase of **~5,000 lines of Python**, it serves as both a capable inference engine and a transparent reference for researchers and developers.
 
+## Reference Attention Backends
+
+In addition to the production backends (FlashInfer, FlashAttention, TensorRT-LLM), Mini-SGLang ships two readable reference implementations intended for learning:
+
+- **`torch` backend** (`python/minisgl/attention/torch_backend.py`): Pure PyTorch. Implements paged KV gather, GQA via `repeat_interleave`, and causal attention with prefix-cache offset in plain Python loops. No external dependencies — easy to step through with a debugger.
+
+- **`triton` backend** (`python/minisgl/attention/triton_backend.py`): Custom Triton decode kernel. Each `(request, head)` pair runs as an independent GPU program, doing paged KV gather and online softmax (Flash-Attention style) directly in the kernel. Prefill falls back to the torch backend — writing a Triton prefill kernel is essentially reimplementing FlashAttention forward and adds complexity without new insight.
+
+To use either backend:
+
+```bash
+python -m minisgl --model "Qwen/Qwen3-0.6B" --attention-backend torch --cuda-graph-max-bs 0
+python -m minisgl --model "Qwen/Qwen3-0.6B" --attention-backend triton --cuda-graph-max-bs 0
+```
+
 ## ✨ Key Features
 
 - **High Performance**: Achieves state-of-the-art throughput and latency with advanced optimizations.
