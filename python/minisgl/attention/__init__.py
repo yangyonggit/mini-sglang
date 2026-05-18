@@ -40,6 +40,13 @@ def create_fa_backend(config: ModelConfig):
     return FlashAttentionBackend(config)
 
 
+@SUPPORTED_ATTENTION_BACKENDS.register("torch")
+def create_torch_backend(config: ModelConfig):
+    from .torch_backend import TorchAttentionBackend
+
+    return TorchAttentionBackend(config)
+
+
 def validate_attn_backend(backend: str, allow_auto: bool = True):
     if backend != "auto":
         required_backends = backend.split(",") if "," in backend else [backend]
