@@ -8,11 +8,10 @@ import torch
 import minisgl.core as _core
 from minisgl.attention import create_attention_backend
 from minisgl.core import Batch, Context, Req, SamplingParams
-from minisgl.distributed import DistributedInfo, set_tp_info
+from minisgl.distributed import DistributedInfo
 from minisgl.engine.config import EngineConfig
 from minisgl.engine.engine import Engine
 from minisgl.kvcache import create_kvcache_pool
-from minisgl.layers import set_rope_device
 from minisgl.models import create_model, load_weight
 from minisgl.utils import load_tokenizer, torch_dtype
 
@@ -126,8 +125,6 @@ class SpeculativeDecoder:
         device = torch.device("cuda:0")
 
         # Target first: Engine.__init__ asserts CUDA uninitialized, so it must go first.
-        set_tp_info(rank=0, size=1)
-        set_rope_device(device)
         target_config = EngineConfig(
             model_path=target_model_path,
             tp_info=DistributedInfo(0, 1),
