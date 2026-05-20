@@ -72,6 +72,7 @@ class Req:
 class Batch:
     reqs: List[Req]
     phase: Literal["prefill", "decode"]
+    verify: bool = False  # speculative decoding: return all-token logits instead of last only
     # these fields should be set by scheduler
     input_ids: torch.Tensor = field(init=False)
     positions: torch.Tensor = field(init=False)
