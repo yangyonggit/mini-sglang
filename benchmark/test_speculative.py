@@ -32,18 +32,15 @@ def run_target_only(target_path: str) -> None:
     """Baseline: target model alone, greedy decode, using Engine directly."""
     import minisgl.core as _core
     from minisgl.core import Batch, Req, SamplingParams
-    from minisgl.distributed import DistributedInfo, set_tp_info
+    from minisgl.distributed import DistributedInfo
     from minisgl.engine.config import EngineConfig
     from minisgl.engine.engine import Engine
     from minisgl.engine.speculative import _make_batch
-    from minisgl.layers import set_rope_device
     from minisgl.utils import load_tokenizer, torch_dtype
 
     print(f"\n=== Target-Only Baseline ({target_path}) ===")
 
     device = torch.device("cuda:0")
-    set_tp_info(rank=0, size=1)
-    set_rope_device(device)
 
     config = EngineConfig(
         model_path=target_path,
