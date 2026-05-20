@@ -10,6 +10,42 @@ A **lightweight yet high-performance** inference framework for Large Language Mo
 
 Mini-SGLang is a compact implementation of [SGLang](https://github.com/sgl-project/sglang), designed to demystify the complexities of modern LLM serving systems. With a compact codebase of **~5,000 lines of Python**, it serves as both a capable inference engine and a transparent reference for researchers and developers.
 
+## Speculative Decoding (Educational)
+
+`python/minisgl/engine/speculative.py` implements speculative decoding as a standalone educational component — intentionally separate from the Scheduler and continuous batching.
+
+**How it works:** A small draft model generates `k` tokens, the large target model verifies all `k` tokens in one parallel prefill, and accepted tokens are kept via rejection sampling. The output distribution is mathematically identical to running the target model alone.
+
+**What's supported:**
+- Separate draft/target models with independent KV caches and attention backends (FlashInfer or torch)
+- Parallel target verification (one prefill, not k sequential decodes)
+- Rejection sampling with corrected distribution + bonus token
+
+**What's not supported (by design):**
+- Batched requests (single request only)
+- Dynamic KV cache / Radix Cache prefix sharing
+- CUDA graph, Tensor Parallelism
+
+**Benchmark (RTX 3090 24G, Qwen3-0.6B draft + Qwen3-4B target, k=5):**
+
+| Mode | tok/s | Acceptance rate |
+|---|---|---|
+| Speculative (0.6B + 4B) | 25.6 | 2.43/6 (40%) |
+| Baseline (4B only) | 67.2 | — |
+
+Speculative decoding is slower here because the acceptance rate is too low — 0.6B and 4B have too large a distribution gap. In practice, speedup requires ~65%+ acceptance rate, which needs a draft model from the same family with closer parameter count (e.g. 1.5B + 7B), or a purpose-trained draft model (e.g. EAGLE).
+
+```bash
+# Run speculative decoding
+python benchmark/test_speculative.py --speculative-only
+
+# Run target-only baseline
+python benchmark/test_speculative.py --baseline-only
+
+# Custom models
+python benchmark/test_speculative.py --draft Qwen/Qwen3-0.6B --target Qwen/Qwen3-4B --k 5 --speculative-only
+```
+
 ## Reference Attention Backends
 
 In addition to the production backends (FlashInfer, FlashAttention, TensorRT-LLM), Mini-SGLang ships two readable reference implementations intended for learning:
