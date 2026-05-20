@@ -110,8 +110,8 @@ def run_target_only(target_path: str) -> None:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--draft", default="Qwen/Qwen3-0.6B")
-    parser.add_argument("--target", default="Qwen/Qwen3-7B")
+    parser.add_argument("--draft", default="Qwen/Qwen3-0.6B-Instruct")
+    parser.add_argument("--target", default="Qwen/Qwen3-7B-Instruct")
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument("--baseline-only", action="store_true")
     parser.add_argument("--speculative-only", action="store_true")
